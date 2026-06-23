@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parenting Canvas – Generator Konten Islami</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        mono: ['Courier New', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        textarea::-webkit-scrollbar { width: 6px; }
+        textarea::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.45s ease-out both; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Framework radio cards */
+        .fw-card { transition: border-color 0.15s, background 0.15s; }
+        .fw-card.selected { border-color: #059669 !important; background: #ecfdf5 !important; }
+        .fw-card.selected .fw-title { color: #065f46; }
+
+        /* Input error state */
+        .input-error { border-color: #f87171 !important; }
+        .error-msg { color: #dc2626; font-size: 0.75rem; font-weight: 700; margin-top: 4px; display: none; }
+        .error-msg.show { display: block; }
+
+        /* Slide badge colors */
+        .badge-COVER  { background: #ecfdf5; color: #065f46; border-color: #6ee7b7; }
+        .badge-ISI    { background: #eff6ff; color: #1e40af; border-color: #93c5fd; }
+        .badge-DALIL  { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
+        .badge-CTA    { background: #fdf4ff; color: #7e22ce; border-color: #d8b4fe; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-black text-base shadow">
+                    🕌
+                </div>
+                <div>
+                    <h1 class="text-base md:text-lg font-black text-slate-900 leading-none tracking-tight">Parenting Canvas</h1>
+                    <p class="text-[10px] font-bold text-emerald-700 tracking-widest uppercase mt-0.5">Generator Konten Islami</p>
+                </div>
+            </div>
+            <div id="api-status" class="text-[11px] font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-300 inline-block"></span>
+                Belum terhubung ke AI
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+
+        <!-- API KEY SECTION -->
+        <section class="bg-white rounded-2xl border-2 border-dashed border-emerald-200 p-5 md:p-6">
+            <div class="flex items-start gap-3">
+                <div class="text-2xl mt-0.5">🔑</div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="font-black text-slate-800 text-sm mb-1">Koneksi API (Opsional)</h2>
+                    <p class="text-xs text-slate-500 font-semibold mb-3">Masukkan Anthropic API Key untuk mengaktifkan generate konten dengan AI. Tanpa API key, template placeholder tetap tersedia.</p>
+                    <div class="flex gap-2">
+                        <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off"
+                            class="flex-1 min-w-0 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-800 outline-none transition-colors">
+                        <button onclick="testApiKey()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+                            Cek Koneksi
+                        </button>
+                    </div>
+                    <p id="api-key-msg" class="text-xs font-bold mt-2 hidden"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BRIEFING SECTION -->
+        <section class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 md:p-8 border border-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-50 rounded-bl-full opacity-40 pointer-events-none"></div>
+
+            <h2 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 relative">
+                <span class="bg-emerald-100 text-emerald-700 w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black">1</span>
+                Client Briefing
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
+                
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Nama Akun / Brand</label>
+                    <input type="text" id="accountName" value="@parentingkeluarga.id" placeholder="@parentingkeluarga.id"
+                        class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none transition-colors text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Niche Konten <span class="text-red-400">*</span></label>
+                    <input type="text" id="niche" placeholder="contoh: Parenting Islami, Finansial Syar'i..."
+                        class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none transition-colors text-sm">
+                    <p id="err-niche" class="error-msg">Niche konten wajib diisi.</p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Topik Spesifik Carousel <span class="text-red-400">*</span></label>
+                    <input type="text" id="topic" placeholder="Contoh: Mengontrol amarah saat anak tantrum menurut sunnah..."
+                        class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none transition-colors text-sm">
+                    <p id="err-topic" class="error-msg">Topik carousel wajib diisi.</p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Deskripsi Karakter Utama (MC)</label>
+                    <textarea id="mcDesc" rows="2" placeholder="Contoh: Ibu muda Asia, usia 28 tahun, memakai hijab syar'i pastel dan gamis longgar, ekspresi lembut..."
+                        class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none transition-colors resize-y text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Jumlah Slide</label>
+                    <div class="relative">
+                        <select id="slideCount" class="w-full appearance-none bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none cursor-pointer text-sm transition-colors">
+                            <option value="5">5 Slide — Ringkas</option>
+                            <option value="7" selected>7 Slide — Standar</option>
+                            <option value="9">9 Slide — Mendalam</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-widest">Tone Konten</label>
+                    <div class="relative">
+                        <select id="tone" class="w-full appearance-none bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-3 font-semibold text-slate-800 outline-none cursor-pointer text-sm transition-colors">
+                            <option value="A" selected>Edukatif-serius</option>
+                            <option value="B">Santai-friendly</option>
+                            <option value="C">Inspiratif-emosional</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Framework Selector -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-extrabold text-slate-600 mb-3 uppercase tracking-widest flex items-center gap-2">
+                        <span class="bg-emerald-100 text-emerald-700 w-5 h-5 rounded text-[10px] font-black flex items-center justify-center">2</span>
+                        Pilih Framework Narasi
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="framework-grid">
+                        <label class="cursor-pointer" onclick="selectFramework(this)">
+                            <input type="radio" name="framework" value="BRIDGE" class="sr-only">
+                            <div class="fw-card rounded-xl border-2 border-slate-200 px-3 py-3 text-center">
+                                <span class="fw-title block font-black text-slate-800 text-sm">THE BRIDGE</span>
+                                <span class="block text-[11px] font-semibold text-slate-400 mt-1">Hook → Dalil → CTA</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer" onclick="selectFramework(this)">
+                            <input type="radio" name="framework" value="AIDA" class="sr-only">
+                            <div class="fw-card rounded-xl border-2 border-slate-200 px-3 py-3 text-center">
+                                <span class="fw-title block font-black text-slate-800 text-sm">AIDA</span>
+                                <span class="block text-[11px] font-semibold text-slate-400 mt-1">Attention → Action</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer" onclick="selectFramework(this)">
+                            <input type="radio" name="framework" value="PAS" class="sr-only" checked>
+                            <div class="fw-card selected rounded-xl border-2 border-slate-200 px-3 py-3 text-center">
+                                <span class="fw-title block font-black text-slate-800 text-sm">PAS</span>
+                                <span class="block text-[11px] font-semibold text-slate-400 mt-1">Problem → Solusi Islam</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer" onclick="selectFramework(this)">
+                            <input type="radio" name="framework" value="STORY" class="sr-only">
+                            <div class="fw-card rounded-xl border-2 border-slate-200 px-3 py-3 text-center">
+                                <span class="fw-title block font-black text-slate-800 text-sm">STORYSELLING</span>
+                                <span class="block text-[11px] font-semibold text-slate-400 mt-1">Kisah → Dalil → CTA</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="mt-8">
+                <button id="btn-generate" onclick="generateCarousel()"
+                    class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-base py-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Generate Breakdown Konten
+                </button>
+                <p id="err-general" class="text-center text-red-500 text-xs font-bold mt-2 hidden">Lengkapi field wajib sebelum melanjutkan.</p>
+            </div>
+        </section>
+
+        <!-- RESULTS SECTION -->
+        <div id="results-container" class="hidden space-y-8">
+
+            <div class="flex items-center gap-3">
+                <div class="h-px bg-slate-200 flex-1"></div>
+                <span class="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <span class="bg-slate-200 text-slate-600 w-5 h-5 rounded text-[10px] font-black flex items-center justify-center">3</span>
+                    Hasil Breakdown Slide
+                </span>
+                <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+
+            <div id="slides-wrapper" class="space-y-5"></div>
+
+            <div class="flex items-center gap-3 mt-10">
+                <div class="h-px bg-slate-200 flex-1"></div>
+                <span class="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <span class="bg-slate-200 text-slate-600 w-5 h-5 rounded text-[10px] font-black flex items-center justify-center">4</span>
+                    Caption &amp; Hashtag
+                </span>
+                <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white border-2 border-slate-200 rounded-2xl p-5 shadow-md">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-black text-slate-800 text-sm flex items-center gap-2">📱 Caption Instagram</h4>
+                        <button onclick="copyContent('caption-text', this)" class="bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 border border-slate-200 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors">
+                            Salin
+                        </button>
+                    </div>
+                    <textarea id="caption-text" rows="9" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-emerald-500 resize-y"></textarea>
+                </div>
+
+                <div class="bg-white border-2 border-slate-200 rounded-2xl p-5 shadow-md">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-black text-slate-800 text-sm flex items-center gap-2">#️⃣ Hashtag</h4>
+                        <button onclick="copyContent('hashtag-text', this)" class="bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 border border-slate-200 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors">
+                            Salin
+                        </button>
+                    </div>
+                    <textarea id="hashtag-text" rows="9" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-emerald-500 resize-y"></textarea>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-500 py-6 mt-16 text-center text-xs font-semibold">
+        <p>Parenting Canvas &middot; Generator Konten Islami <span class="text-emerald-500">✦</span> parentingkeluarga.id</p>
+    </footer>
+
+    <script>
+    // ─────────────────────────────────────────
+    // DATA: Framework Structures
+    // ─────────────────────────────────────────
+    const frameworks = {
+        BRIDGE: {
+            5: ['Hook (Masalah)', 'Analogi / Jembatan', 'Deep Why', 'Dalil / Hadits', 'Kesimpulan & CTA'],
+            7: ['Hook (Masalah)', 'Analogi 1', 'Analogi 2', 'Deep Why', 'Dalil / Hadits', 'Kesimpulan', 'CTA Engagement'],
+            9: ['Hook (Masalah)', 'Analogi 1', 'Analogi 2', 'Deep Why (Faktor 1)', 'Deep Why (Faktor 2)', 'Dalil / Hadits', 'Kesimpulan Praktis', 'Ajakan Perubahan', 'CTA Engagement']
+        },
+        AIDA: {
+            5: ['Attention (Hook)', 'Interest (Bangun Minat)', 'Desire (Keinginan)', 'Dalil / Hadits', 'Action (CTA)'],
+            7: ['Attention (Hook)', 'Interest (Fakta/Data)', 'Desire (Harapan)', 'Ajakan Bertindak Awal', 'Dalil / Hadits', 'Kesimpulan', 'Action (CTA)'],
+            9: ['Attention (Hook)', 'Interest 1 (Masalah Umum)', 'Interest 2 (Dampak)', 'Desire 1 (Kondisi Ideal)', 'Desire 2 (Solusi)', 'Ajakan Bertindak', 'Dalil / Hadits', 'Kesimpulan', 'Action (CTA)']
+        },
+        PAS: {
+            5: ['Problem (Hook)', 'Agitate (Perbesar Masalah)', 'Solution (Solusi Islami)', 'Dalil / Hadits', 'Kesimpulan & CTA'],
+            7: ['Problem (Hook)', 'Agitate (Dampak Buruk)', 'Solution (Konsep Islami)', 'Langkah Praktis', 'Dalil / Hadits', 'Kesimpulan', 'CTA Engagement'],
+            9: ['Problem (Hook)', 'Agitate 1 (Dampak ke Anak)', 'Agitate 2 (Dampak ke Ortu)', 'Solution 1 (Mindset)', 'Solution 2 (Praktek)', 'Dalil / Hadits', 'Kesimpulan', 'Pesan Empati', 'CTA Engagement']
+        },
+        STORY: {
+            5: ['Pembuka Kisah (Hook)', 'Konflik Utama', 'Titik Balik / Pelajaran', 'Dalil / Hadits', 'Kesimpulan & CTA'],
+            7: ['Pembuka Kisah (Hook)', 'Latar Belakang', 'Konflik Memuncak', 'Titik Balik', 'Pelajaran Diambil', 'Dalil / Hadits', 'CTA Engagement'],
+            9: ['Pembuka Kisah (Hook)', 'Pengenalan Tokoh', 'Konflik Awal', 'Konflik Memuncak', 'Titik Balik (Hidayah)', 'Pelajaran 1', 'Pelajaran 2', 'Dalil / Hadits', 'CTA Engagement']
+        }
+    };
+
+    const bgColors = [
+        'bg-slate-50 border-slate-200',
+        'bg-emerald-50 border-emerald-200',
+        'bg-teal-50 border-teal-200',
+        'bg-sky-50 border-sky-200',
+        'bg-indigo-50 border-indigo-200',
+        'bg-violet-50 border-violet-200',
+        'bg-fuchsia-50 border-fuchsia-200',
+        'bg-amber-50 border-amber-200',
+        'bg-rose-50 border-rose-200',
+    ];
+
+    // ─────────────────────────────────────────
+    // FRAMEWORK SELECTOR — fix visual default
+    // ─────────────────────────────────────────
+    function selectFramework(labelEl) {
+        document.querySelectorAll('.fw-card').forEach(c => c.classList.remove('selected'));
+        const card = labelEl.querySelector('.fw-card');
+        if (card) card.classList.add('selected');
+        const radio = labelEl.querySelector('input[type=radio]');
+        if (radio) radio.checked = true;
+    }
+
+    // ─────────────────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────────────────
+    function validateInputs() {
+        let valid = true;
+
+        const niche = document.getElementById('niche');
+        const nicheErr = document.getElementById('err-niche');
+        if (!niche.value.trim()) {
+            niche.classList.add('input-error');
+            nicheErr.classList.add('show');
+            valid = false;
+        } else {
+            niche.classList.remove('input-error');
+            nicheErr.classList.remove('show');
+        }
+
+        const topic = document.getElementById('topic');
+        const topicErr = document.getElementById('err-topic');
+        if (!topic.value.trim()) {
+            topic.classList.add('input-error');
+            topicErr.classList.add('show');
+            valid = false;
+        } else {
+            topic.classList.remove('input-error');
+            topicErr.classList.remove('show');
+        }
+
+        return valid;
+    }
+
+    // ─────────────────────────────────────────
+    // API KEY TEST
+    // ─────────────────────────────────────────
+    async function testApiKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        const msgEl = document.getElementById('api-key-msg');
+        const statusEl = document.getElementById('api-status');
+        msgEl.className = 'text-xs font-bold mt-2';
+
+        if (!key) {
+            msgEl.textContent = 'Masukkan API key terlebih dahulu.';
+            msgEl.classList.add('text-red-500');
+            msgEl.classList.remove('hidden');
+            return;
+        }
+
+        msgEl.textContent = 'Memeriksa koneksi...';
+        msgEl.classList.add('text-slate-500');
+        msgEl.classList.remove('hidden');
+
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': key,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 10,
+                    messages: [{ role: 'user', content: 'Hi' }]
+                })
+            });
+
+            if (res.ok) {
+                msgEl.textContent = '✓ API Key valid! AI siap digunakan.';
+                msgEl.classList.add('text-emerald-600');
+                msgEl.classList.remove('text-slate-500', 'text-red-500');
+                statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> AI Aktif';
+                statusEl.className = 'text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-1.5';
+            } else {
+                const data = await res.json();
+                msgEl.textContent = '✗ Gagal: ' + (data && data.error ? data.error.message : 'API Key tidak valid.');
+                msgEl.classList.add('text-red-500');
+                msgEl.classList.remove('text-slate-500', 'text-emerald-600');
+            }
+        } catch (e) {
+            msgEl.textContent = '✗ Tidak dapat terhubung. Cek koneksi internet.';
+            msgEl.classList.add('text-red-500');
+            msgEl.classList.remove('text-slate-500', 'text-emerald-600');
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // MAIN GENERATE
+    // ─────────────────────────────────────────
+    function generateCarousel() {
+        if (!validateInputs()) {
+            document.getElementById('err-general').classList.remove('hidden');
+            setTimeout(() => document.getElementById('err-general').classList.add('hidden'), 4000);
+            return;
+        }
+        document.getElementById('err-general').classList.add('hidden');
+
+        const accountName = document.getElementById('accountName').value.trim() || '@parentingkeluarga.id';
+        const niche       = document.getElementById('niche').value.trim();
+        const topic       = document.getElementById('topic').value.trim();
+        const mcDesc      = document.getElementById('mcDesc').value.trim() || "Wanita Muslimah berhijab syar'i, ekspresi lembut dan hangat";
+        const count       = parseInt(document.getElementById('slideCount').value);
+        const toneCode    = document.getElementById('tone').value;
+        const framework   = document.querySelector('input[name="framework"]:checked').value;
+
+        const toneMap = { A: 'Edukatif-serius', B: 'Santai-friendly', C: 'Inspiratif-emosional' };
+        const tone = toneMap[toneCode];
+        const structure = frameworks[framework][count];
+        const wrapper = document.getElementById('slides-wrapper');
+        wrapper.innerHTML = '';
+
+        const globalRules =
+            "ATURAN GLOBAL GAMBAR:\n" +
+            "1. Nama akun (" + accountName + ") di tengah bawah — floating patch persegi panjang melengkung.\n" +
+            "2. Rasio carousel 4:5.\n" +
+            "3. Karakter utama WAJIB konsisten sesuai deskripsi MC di setiap slide.\n" +
+            "4. ULTRA-STRICT: Laki-laki wajib berambut & celana di bawah lutut. Wanita wajib hijab & rok/gamis menutupi seluruh kaki.\n" +
+            "5. DILARANG KERAS menggambarkan fisik Allah SWT.";
+
+        structure.forEach(function(label, index) {
+            const slideNum  = index + 1;
+            const isCover   = index === 0;
+            const isCTA     = index === structure.length - 1;
+            const isDalil   = label.toLowerCase().includes('dalil');
+            const slideType = isCover ? 'COVER' : (isCTA ? 'CTA' : (isDalil ? 'DALIL' : 'ISI'));
+            const colorClass = bgColors[index % bgColors.length];
+
+            let headerTxt, bodyTxt;
+            if (isCover) {
+                headerTxt = '[Tulis judul yang kuat & relevan untuk topik: "' + topic + '"]';
+                bodyTxt   = '[Hook pembuka 1-2 kalimat dengan tone ' + tone + ' — buat pembaca berhenti scroll]';
+            } else if (isCTA) {
+                headerTxt = 'Yuk Amalkan Bersama!';
+                bodyTxt   = 'Bagaimana pendapat Ayah/Bunda tentang hal ini?\n\nJangan lupa Like 💚, Save 🔖, dan Share postingan ini agar lebih banyak yang mengambil hikmahnya. Barakallahu fiikum.';
+            } else if (isDalil) {
+                headerTxt = 'Apa Kata Al-Quran & Sunnah?';
+                bodyTxt   = '[Teks Arab Ayat/Hadits]\n\n"[Terjemahan lengkap yang relevan dengan ' + topic + ']"\n(QS./HR. [Nama Sumber, nomor])';
+            } else {
+                headerTxt = '[Subjudul kuat untuk: ' + label + ']';
+                bodyTxt   = '[Tulis 2-3 kalimat dengan tone ' + tone + '. Gunakan bahasa empati, tidak menghakimi. Sapa dengan "Ayah/Bunda".]';
+            }
+
+            const teksContent = '[HEADER]\n' + headerTxt + '\n\n[BODY]\n' + bodyTxt + '\n\n[FOOTER]\n' + accountName;
+
+            const visualGlobalPrefix = isCover ? globalRules + '\n\n────────────────────\n\n' : '';
+            let visualAction = '[Aksi karakter yang relevan dengan tema: ' + label + ']';
+            if (isDalil) visualAction = 'Karakter sedang membaca mushaf/buku dengan ekspresi merenung dan tenang.';
+            if (isCTA)   visualAction = 'Karakter tersenyum hangat, menunjuk ke arah viewer atau teks CTA.';
+
+            const visualContent =
+                visualGlobalPrefix +
+                'KONSEP VISUAL SLIDE ' + slideNum + '\n' +
+                '— SUBJEK    : ' + mcDesc + '\n' +
+                '— PREDIKAT  : ' + visualAction + '\n' +
+                '— OBJEK     : [Benda pendukung, misal: buku, mainan anak, sajadah]\n' +
+                '— MOOD      : [Pilih: hangat / fokus / bahagia / emosional]\n' +
+                '— NPC       : [Jika ada figuran, WAJIB faceless & menutup aurat]\n' +
+                '— BACKGROUND: [Setting lokasi yang relevan & konsisten dengan topik]\n' +
+                '— PALET     : [2-3 warna utama — beda dari slide sebelumnya]\n' +
+                '— LAYOUT    : Karakter di bagian bawah/samping, ruang teks lega di atas/tengah\n' +
+                '— TIPOGRAFI :\n' +
+                '  · Header : Bold Sans-Serif, ~80pt\n' +
+                '  · Body   : Medium Sans-Serif, ~40pt\n' +
+                '  · Footer : Light Sans-Serif, ~25pt, floating patch di tengah bawah';
+
+            const delay = (index * 0.07).toFixed(2);
+
+            const cardHtml =
+                '<div class="' + colorClass + ' border-2 rounded-3xl p-5 md:p-6 fade-in" style="animation-delay:' + delay + 's">' +
+                  '<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">' +
+                    '<div class="flex items-center gap-2 flex-wrap">' +
+                      '<span class="bg-white text-slate-800 font-black px-3 py-1 rounded-full shadow-sm border border-slate-200 text-xs">SLIDE ' + slideNum + '</span>' +
+                      '<span class="badge-' + slideType + ' border text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full">' + slideType + '</span>' +
+                      '<span class="text-xs font-semibold text-slate-500 bg-white/70 px-2.5 py-1 rounded-full border border-slate-200">' + label + '</span>' +
+                    '</div>' +
+                    '<button onclick="copyEntireSlide(' + slideNum + ', this)" class="bg-white hover:bg-emerald-500 hover:text-white text-slate-600 border border-slate-200 hover:border-emerald-600 font-bold text-xs px-3 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0">' +
+                      '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>' +
+                      'Salin Slide' +
+                    '</button>' +
+                  '</div>' +
+                  '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">' +
+                    '<div class="bg-white/90 backdrop-blur-sm border border-slate-200/70 rounded-2xl p-4 shadow-sm">' +
+                      '<h4 class="font-black text-xs text-slate-600 mb-3 flex items-center gap-1.5 uppercase tracking-widest">📝 Format Teks Slide</h4>' +
+                      '<textarea id="teks-' + slideNum + '" rows="10" class="w-full bg-transparent border-0 focus:ring-0 p-0 text-sm font-medium text-slate-800 resize-y leading-relaxed">' + teksContent + '</textarea>' +
+                    '</div>' +
+                    '<div class="bg-white/90 backdrop-blur-sm border border-slate-200/70 rounded-2xl p-4 shadow-sm">' +
+                      '<h4 class="font-black text-xs text-slate-600 mb-3 flex items-center gap-1.5 uppercase tracking-widest">🎨 Konsep Visual</h4>' +
+                      '<textarea id="visual-' + slideNum + '" rows="10" class="w-full bg-transparent border-0 focus:ring-0 p-0 text-[12px] font-mono leading-relaxed text-slate-600 resize-y">' + visualContent + '</textarea>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>';
+
+            wrapper.insertAdjacentHTML('beforeend', cardHtml);
+        });
+
+        // Caption
+        const captionText =
+            '[Hook emosional atau pertanyaan yang langsung menyentuh hati orang tua terkait: "' + topic + '"]\n\n' +
+            'Ayah/Bunda pasti pernah merasakan ini...\n\n' +
+            '[Isi caption 3-4 kalimat dengan tone ' + tone + '. Sampaikan wawasan islami, ajak pembaca tidak merasa sendirian. Gunakan bahasa yang hangat dan personal.]\n\n' +
+            '👇 Bagaimana pengalaman Ayah/Bunda? Tulis di komentar ya!\n\n' +
+            'Jangan lupa SAVE postingan ini agar mudah dibaca ulang ✨\n\n' +
+            '—\nFollow ' + accountName + ' untuk tips parenting islami setiap hari 🌸';
+
+        document.getElementById('caption-text').value = captionText;
+
+        // Hashtags
+        const topicSlug = topic.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 20) || 'parenting';
+        const hashtagText = '#parentingislami #parentingindonesia #' + topicSlug + ' #tipsmendidikanak #keluargabahagia #parentinganak #psikologianak #tumbuhkembanganak #infoparenting #duniaanak #belajarparenting #ibudananak #parentingkeluarga #islamicparenting #anaksoleh';
+        document.getElementById('hashtag-text').value = hashtagText;
+
+        document.getElementById('results-container').classList.remove('hidden');
+        setTimeout(function() {
+            document.getElementById('results-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    // ─────────────────────────────────────────
+    // COPY HELPERS
+    // ─────────────────────────────────────────
+    function applyCopiedState(btn, originalHTML) {
+        btn.innerHTML = '✓ Disalin!';
+        btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-700');
+        btn.classList.remove('bg-white', 'bg-slate-100', 'text-slate-600', 'hover:bg-emerald-500', 'hover:bg-emerald-100', 'hover:text-emerald-700', 'hover:border-emerald-600');
+        setTimeout(function() {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-700');
+            btn.classList.add('bg-white', 'text-slate-600');
+        }, 2000);
+    }
+
+    function copyToClipboard(text, btn, originalHTML) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text)
+                .then(function() { applyCopiedState(btn, originalHTML); })
+                .catch(function() { fallbackCopy(text, btn, originalHTML); });
+        } else {
+            fallbackCopy(text, btn, originalHTML);
+        }
+    }
+
+    function fallbackCopy(text, btn, originalHTML) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); applyCopiedState(btn, originalHTML); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    function copyContent(elementId, btn) {
+        const text = document.getElementById(elementId).value;
+        copyToClipboard(text, btn, btn.innerHTML);
+    }
+
+    function copyEntireSlide(slideNum, btn) {
+        const teksEl   = document.getElementById('teks-' + slideNum);
+        const visualEl = document.getElementById('visual-' + slideNum);
+        if (!teksEl || !visualEl) return;
+        const combined = teksEl.value + '\n\n────────────────────\n\n' + visualEl.value;
+        copyToClipboard(combined, btn, btn.innerHTML);
+    }
+    </script>
+</body>
+</html>
